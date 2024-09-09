@@ -1,0 +1,11 @@
+---
+- name: Check if the repository is already cloned
+  stat:
+    path: 'https://github.com/EdgeKing810/interns-docker-compose-lamp'
+  register: repo_exists
+
+- name: Clone the repository if not already cloned
+  git:
+    repo: 'https://github.com/EdgeKing810/interns-docker-compose-lamp'
+    dest: playbooks/roles/configure_lamp/files
+  when: not repo_exists.stat.exists

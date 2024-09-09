@@ -1,0 +1,7 @@
+# playbooks/roles/prerequisites/handlers/main.yml
+---
+- name: Restart Nginx
+  service:
+    name: "{{ nginx_package }}"
+    state: restarted
+    enabled: yes

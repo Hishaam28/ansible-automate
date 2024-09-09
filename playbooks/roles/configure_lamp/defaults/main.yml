@@ -1,0 +1,6 @@
+db_user: myuser
+db_name: mydatabase
+
+
+index_path: "/home/hishaam/hish_repo_docker/webroot/index.php"
+Hish_repo: "/home/hishaam/hish_repo_docker"

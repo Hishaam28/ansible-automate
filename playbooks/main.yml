@@ -1,10 +1,21 @@
+# playbooks/main.yml
 ---
-- name: Automation LAMP Stack
+- name: Complete Automation Setup
   hosts: localhost
+  become: yes
+  vars:
+    packages:
+      - python3
+      - nginx
+
   roles:
     - role: prerequisites
       tags: always
+    
     - role: configure_lamp
       tags: always
+    
     - role: reverse_proxy
       tags: always
+
+ 

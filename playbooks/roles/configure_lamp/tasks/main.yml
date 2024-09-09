@@ -2,6 +2,86 @@
 # Add tasks to automate the steps done during weeks 5 and 6 here
 # Use the defaults/ and files/ directories too
 
-- name: Print message
-  ansible.builtin.debug:
-    msg: Please remove me
+- name: Check if the repository has been cloned
+  stat:
+    path: "{{ Hish_repo }}"
+  register: repo_cloned
+
+- name: Clone the repository
+  git:
+    repo: 'https://github.com/EdgeKing810/interns-docker-compose-lamp'
+    dest: "{{ Hish_repo }}"
+  when: not repo_cloned.stat.exists
+
+- name: Ensure directory exists
+  file:
+    path: "{{ Hish_repo }}"
+    state: directory
+    mode: '0755'
+
+- name: Copy .env.sample to .env
+  copy:
+    src: "{{ Hish_repo }}/.env.sample"
+    dest: "{{ Hish_repo }}/.env"
+  when: not repo_cloned.stat.exists
+
+- name: Copy Dockerfile to the Docker location
+  template:
+    src: DockerFile.j2
+    dest: "{{ Hish_repo }}/bin/webserver/Dockerfile"
+
+- name: Copy docker-compose.yml to the Docker location
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ Hish_repo }}/docker-compose.yml"
+
+- name: Set database user password
+  set_fact:
+    db_password: "{{ lookup('password', '/dev/null', length=12, chars=ascii_letters+digit) }}"
+  when: not repo_cloned.stat.exists   
+
+- name: Set database root password
+  set_fact:
+    db_root_password: "{{ lookup('password', '/dev/null', length=12, chars=ascii_letters+digit) }}"
+  when: not repo_cloned.stat.exists 
+
+
+- name: Update DB_USER in .env file
+  lineinfile:
+    path: "{{ Hish_repo }}/.env"
+    regexp: '^DB_USER='
+    line: "DB_USER={{ db_user }}"
+  when: not repo_cloned.stat.exists 
+
+- name: Update DB_PASSWORD in .env file
+  lineinfile:
+    path: "{{ Hish_repo }}/.env"
+    regexp: '^DB_PASSWORD='
+    line: "DB_PASSWORD={{ db_password }}"
+  when: not repo_cloned.stat.exists 
+
+- name: Update DB_ROOT_PASSWORD in .env file
+  lineinfile:
+    path: "{{ Hish_repo }}/.env"
+    regexp: '^DB_ROOT_PASSWORD='
+    line: "DB_ROOT_PASSWORD={{ db_root_password }}"
+  when: not repo_cloned.stat.exists 
+
+- name: Update DB credentials in index.php
+  replace:
+    path: "{{ index_path }}"
+    regexp: 'root'
+    replace: '{{ db_user }}'
+  when: not repo_cloned.stat.exists
+
+- name: Update DB password in index.php
+  replace:
+    path: "{{ index_path }}"
+    regexp: 'tiger'
+    replace: '{{ db_password }}'
+  when: not repo_cloned.stat.exists
+
+- name: Run docker-compose up
+  command: docker-compose up -d
+  args:
+    chdir: "{{ Hish_repo }}"

@@ -1,0 +1,2 @@
+ssl_cert_path: playbooks/playbooks/ssl/nginx-selfsigned.crt
+ssl_key_path: playbooks/playbooks/ssl/nginx-selfsigned.key

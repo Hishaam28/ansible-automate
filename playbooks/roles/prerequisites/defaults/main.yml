@@ -1,0 +1,7 @@
+# playbooks/roles/prerequisites/defaults/main.yml
+
+---
+packages:
+  - python3
+  - nginx
+  
